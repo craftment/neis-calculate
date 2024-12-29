@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나이스 바이트 계산기&이미지 텍스트 추출</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            text-align: center; /* 전체 페이지 텍스트 중앙 정렬 */
+        }
+        h1, h2 {
+            text-align: center; /* 제목 중앙 정렬 */
+        }
+        textarea {
+            width: 80%; /* 텍스트 영역 너비 80% */
+            height: 150px;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0; /* 버튼 간격 */
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .warning {
+            color: red;
+        }
+        /* 이미지에서 텍스트 추출 버튼 위치 조정 */
+        #extractTextButton {
+            margin-top: 20px; /* 조금 내려줌 */
+        }
+        /* 모바일 반응형 디자인 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            textarea {
+                font-size: 14px;
+                height: 120px;
+                width: 100%; /* 모바일에서 너비 100% */
+            }
+            button {
+                width: 100%;
+                font-size: 14px;
+            }
+        }
+
+        /* 테이블 스타일 */
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>나이스 바이트 계산기</h1>
+    <textarea id="inputText" placeholder="여기에 텍스트를 입력하세요"></textarea><br>
+    <button onclick="calculateBytesAndCheck()">바이트 계산</button><br><br>
+
+    <h2>이미지에서 텍스트 추출(약간의 시간이 소요됩니다)</h2>
+    <input type="file" id="imageInput" accept="image/*"><br>
+    <button id="extractTextButton" onclick="extractTextFromImage()">이미지에서 텍스트 추출</button>
+
+    <div class="result" id="byteResult"></div>
+
+    <!-- 바이트 정보 테이블 -->
+    <h2>바이트 정보</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>활동/항목</th>
+                <th>허용 바이트 수</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>자율활동</td>
+                <td>1500 Bytes</td>
+            </tr>
+            <tr>
+                <td>동아리활동</td>
+                <td>1500 Bytes</td>
+            </tr>
+            <tr>
+                <td>진로활동</td>
+                <td>2100 Bytes</td>
+            </tr>
+            <tr>
+                <td>교과세특</td>
+                <td>1500 Bytes</td>
+            </tr>
+            <tr>
+                <td>행동특성 및 종합의견</td>
+                <td>1500 Bytes</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.0.0-beta.2/dist/tesseract.min.js"></script>
+    <script>
+        // 바이트 계산 함수
+        function calculateBytes(text) {
+            let totalBytes = 0;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === '\n') {
+                    totalBytes += 2;  // 엔터키는 2바이트
+                } else if (/[a-zA-Z0-9!@#$%^&*(),.?":{}|<>]/.test(char)) {
+                    totalBytes += 1;  // 영어, 숫자, 특수문자, 띄어쓰기 1바이트
+                } else if (char === ' ') {
+                    totalBytes += 1;  // 띄어쓰기 1바이트
+                } else {
+                    totalBytes += 3;  // 한글 및 기타 비 ASCII 문자는 3바이트
+                }
+            }
+            return totalBytes;
+        }
+
+        // 바이트 계산 및 결과 표시
+        function calculateBytesAndCheck() {
+            const text = document.getElementById("inputText").value;
+
+            // 바이트 계산
+            const byteSize = calculateBytes(text);
+            document.getElementById("byteResult").innerText = `총 바이트 수: ${byteSize} Bytes`;
+
+            // 바이트 한도 초과 감지
+            if (byteSize > 2100) {
+                document.getElementById("byteResult").innerHTML += `<br><span class="warning">⚠️ 경고: 입력된 문장이 최대 바이트 한도를 초과했습니다!</span>`;
+            }
+        }
+
+        // 이미지에서 텍스트 추출
+        function extractTextFromImage() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const image = e.target.result;
+
+                    // Tesseract.js를 이용해 이미지에서 텍스트 추출
+                    Tesseract.recognize(
+                        image,
+                        'kor',  // 한국어 텍스트 추출 (한글 인식)
+                        {
+                            logger: (m) => console.log(m),  // 진행 상태를 로깅
+                        }
+                    ).then(({ data: { text } }) => {
+                        // 텍스트 추출 후 바이트 계산
+                        document.getElementById("inputText").value = text;  // 텍스트 영역에 추출된 텍스트 표시
+                        calculateBytesAndCheck();  // 바이트 계산 실행
+                    }).catch(err => {
+                        console.error("텍스트 추출 실패:", err);
+                        document.getElementById("byteResult").innerText = "이미지에서 텍스트 추출에 실패했습니다.";
+                    });
+                };
+                reader.readAsDataURL(file);  // 이미지 파일을 읽어들임
+            } else {
+                document.getElementById("byteResult").innerText = "이미지를 선택해 주세요.";
+            }
+        }
+    </script>
+</body>
+</html>
