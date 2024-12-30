@@ -82,10 +82,35 @@
             background-color: #4CAF50;
             color: white;
         }
+
+        /* 진행률 표시 스타일 */
+        #progressContainer {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #ddd;
+            border-radius: 20px;
+            height: 30px;
+            overflow: hidden;
+        }
+
+        #progressBar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%; /* 초기 상태로 0% */
+        }
+
+        #progressText {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <h1>나이스 바이트 계산기&이미지 텍스트 추출</h1>
+    <h1>나이스 바이트 계산기</h1>
     <textarea id="inputText" placeholder="여기에 텍스트를 입력하세요"></textarea><br>
     <button onclick="calculateBytesAndCheck()">바이트 계산</button><br><br>
 
@@ -94,6 +119,12 @@
     <button id="extractTextButton" onclick="extractTextFromImage()">이미지에서 텍스트 추출</button>
 
     <div class="result" id="byteResult"></div>
+
+    <!-- 진행률 바 -->
+    <div id="progressContainer" style="display:none;">
+        <div id="progressBar"></div>
+        <div id="progressText">0%</div>
+    </div>
 
     <!-- 바이트 정보 테이블 -->
     <h2>바이트 정보</h2>
@@ -171,20 +202,33 @@
                 reader.onload = function(e) {
                     const image = e.target.result;
 
+                    // 진행률 표시
+                    document.getElementById("progressContainer").style.display = 'block';
+
                     // Tesseract.js를 이용해 이미지에서 텍스트 추출
                     Tesseract.recognize(
                         image,
                         'kor',  // 한국어 텍스트 추출 (한글 인식)
                         {
-                            logger: (m) => console.log(m),  // 진행 상태를 로깅
+                            logger: (m) => {
+                                if (m.status === 'recognizing text') {
+                                    const progress = Math.round(m.progress * 100);  // 진행률을 퍼센트로 계산
+                                    document.getElementById("progressBar").style.width = `${progress}%`;
+                                    document.getElementById("progressText").innerText = `${progress}%`;
+                                }
+                            },
                         }
                     ).then(({ data: { text } }) => {
                         // 텍스트 추출 후 바이트 계산
                         document.getElementById("inputText").value = text;  // 텍스트 영역에 추출된 텍스트 표시
                         calculateBytesAndCheck();  // 바이트 계산 실행
+
+                        // 진행률 숨기기
+                        document.getElementById("progressContainer").style.display = 'none';
                     }).catch(err => {
                         console.error("텍스트 추출 실패:", err);
                         document.getElementById("byteResult").innerText = "이미지에서 텍스트 추출에 실패했습니다.";
+                        document.getElementById("progressContainer").style.display = 'none';
                     });
                 };
                 reader.readAsDataURL(file);  // 이미지 파일을 읽어들임
