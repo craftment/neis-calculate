@@ -10,13 +10,13 @@
             margin: 0;
             padding: 20px;
             background-color: #f0f0f0;
-            text-align: center; /* 전체 페이지 텍스트 중앙 정렬 */
+            text-align: center;
         }
         h1, h2 {
-            text-align: center; /* 제목 중앙 정렬 */
+            text-align: center;
         }
         textarea {
-            width: 80%; /* 텍스트 영역 너비 80% */
+            width: 80%;
             height: 150px;
             font-size: 16px;
             padding: 10px;
@@ -35,7 +35,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px 0; /* 버튼 간격 */
+            margin: 10px 0;
         }
         button:hover {
             background-color: #45a049;
@@ -47,11 +47,9 @@
         .warning {
             color: red;
         }
-        /* 이미지에서 텍스트 추출 버튼 위치 조정 */
         #extractTextButton {
-            margin-top: 20px; /* 조금 내려줌 */
+            margin-top: 20px;
         }
-        /* 모바일 반응형 디자인 */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -59,15 +57,13 @@
             textarea {
                 font-size: 14px;
                 height: 120px;
-                width: 100%; /* 모바일에서 너비 100% */
+                width: 100%;
             }
             button {
                 width: 100%;
                 font-size: 14px;
             }
         }
-
-        /* 테이블 스타일 */
         table {
             width: 80%;
             margin: 20px auto;
@@ -82,8 +78,6 @@
             background-color: #4CAF50;
             color: white;
         }
-
-        /* 진행률 표시 스타일 */
         #progressContainer {
             width: 80%;
             margin: 20px auto;
@@ -92,13 +86,11 @@
             height: 30px;
             overflow: hidden;
         }
-
         #progressBar {
             height: 100%;
             background-color: #4CAF50;
-            width: 0%; /* 초기 상태로 0% */
+            width: 0%;
         }
-
         #progressText {
             position: absolute;
             width: 100%;
@@ -120,13 +112,11 @@
 
     <div class="result" id="byteResult"></div>
 
-    <!-- 진행률 바 -->
     <div id="progressContainer" style="display:none;">
         <div id="progressBar"></div>
         <div id="progressText">0%</div>
     </div>
 
-    <!-- 바이트 정보 테이블 -->
     <h2>바이트 정보</h2>
     <table>
         <thead>
@@ -136,102 +126,102 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>자율활동</td>
-                <td>1500 Bytes</td>
-            </tr>
-            <tr>
-                <td>동아리활동</td>
-                <td>1500 Bytes</td>
-            </tr>
-            <tr>
-                <td>진로활동</td>
-                <td>2100 Bytes</td>
-            </tr>
-            <tr>
-                <td>교과세특</td>
-                <td>1500 Bytes</td>
-            </tr>
-            <tr>
-                <td>행동특성 및 종합의견</td>
-                <td>1500 Bytes</td>
-            </tr>
+            <tr><td>자율활동</td><td>1500 Bytes</td></tr>
+            <tr><td>동아리활동</td><td>1500 Bytes</td></tr>
+            <tr><td>진로활동</td><td>2100 Bytes</td></tr>
+            <tr><td>교과세특</td><td>1500 Bytes</td></tr>
+            <tr><td>행동특성 및 종합의견</td><td>1500 Bytes</td></tr>
         </tbody>
     </table>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.0.0-beta.2/dist/tesseract.min.js"></script>
     <script>
-        // 바이트 계산 함수
         function calculateBytes(text) {
             let totalBytes = 0;
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
                 if (char === '\n') {
-                    totalBytes += 2;  // 엔터키는 2바이트
+                    totalBytes += 2;
                 } else if (/[a-zA-Z0-9!@#$%^&*(),.?":{}|<>]/.test(char)) {
-                    totalBytes += 1;  // 영어, 숫자, 특수문자, 띄어쓰기 1바이트
+                    totalBytes += 1;
                 } else if (char === ' ') {
-                    totalBytes += 1;  // 띄어쓰기 1바이트
+                    totalBytes += 1;
                 } else {
-                    totalBytes += 3;  // 한글 및 기타 비 ASCII 문자는 3바이트
+                    totalBytes += 3;
                 }
             }
             return totalBytes;
         }
 
-        // 바이트 계산 및 결과 표시
         function calculateBytesAndCheck() {
             const text = document.getElementById("inputText").value;
-
-            // 바이트 계산
             const byteSize = calculateBytes(text);
             document.getElementById("byteResult").innerText = `총 바이트 수: ${byteSize} Bytes`;
-
-            // 바이트 한도 초과 감지
             if (byteSize > 2100) {
                 document.getElementById("byteResult").innerHTML += `<br><span class="warning">⚠️ 경고: 입력된 문장이 최대 바이트 한도를 초과했습니다!</span>`;
             }
         }
 
-        // 이미지에서 텍스트 추출
+        function convertToGrayscale(image) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const avg = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+                data[i] = data[i + 1] = data[i + 2] = avg;
+            }
+            ctx.putImageData(imageData, 0, 0);
+            return canvas.toDataURL();
+        }
+
         function extractTextFromImage() {
             const fileInput = document.getElementById('imageInput');
             const file = fileInput.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const image = e.target.result;
+                    const image = new Image();
+                    image.onload = function() {
+                        const grayscaleImage = convertToGrayscale(image);
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        ctx.drawImage(image, 0, 0);
 
-                    // 진행률 표시
-                    document.getElementById("progressContainer").style.display = 'block';
+                        // 진행률 표시
+                        document.getElementById("progressContainer").style.display = 'block';
 
-                    // Tesseract.js를 이용해 이미지에서 텍스트 추출
-                    Tesseract.recognize(
-                        image,
-                        'kor',  // 한국어 텍스트 추출 (한글 인식)
-                        {
-                            logger: (m) => {
-                                if (m.status === 'recognizing text') {
-                                    const progress = Math.round(m.progress * 100);  // 진행률을 퍼센트로 계산
-                                    document.getElementById("progressBar").style.width = `${progress}%`;
-                                    document.getElementById("progressText").innerText = `${progress}%`;
-                                }
-                            },
-                        }
-                    ).then(({ data: { text } }) => {
-                        // 텍스트 추출 후 바이트 계산
-                        document.getElementById("inputText").value = text;  // 텍스트 영역에 추출된 텍스트 표시
-                        calculateBytesAndCheck();  // 바이트 계산 실행
-
-                        // 진행률 숨기기
-                        document.getElementById("progressContainer").style.display = 'none';
-                    }).catch(err => {
-                        console.error("텍스트 추출 실패:", err);
-                        document.getElementById("byteResult").innerText = "이미지에서 텍스트 추출에 실패했습니다.";
-                        document.getElementById("progressContainer").style.display = 'none';
-                    });
+                        // Tesseract.js로 텍스트 추출
+                        Tesseract.recognize(
+                            grayscaleImage,
+                            'kor',
+                            {
+                                logger: (m) => {
+                                    if (m.status === 'recognizing text') {
+                                        const progress = Math.round(m.progress * 100);
+                                        document.getElementById("progressBar").style.width = `${progress}%`;
+                                        document.getElementById("progressText").innerText = `${progress}%`;
+                                    }
+                                },
+                            }
+                        ).then(({ data: { text } }) => {
+                            document.getElementById("inputText").value = text;
+                            calculateBytesAndCheck();
+                            document.getElementById("progressContainer").style.display = 'none';
+                        }).catch(err => {
+                            console.error("텍스트 추출 실패:", err);
+                            document.getElementById("byteResult").innerText = "이미지에서 텍스트 추출에 실패했습니다.";
+                            document.getElementById("progressContainer").style.display = 'none';
+                        });
+                    };
+                    image.src = e.target.result;
                 };
-                reader.readAsDataURL(file);  // 이미지 파일을 읽어들임
+                reader.readAsDataURL(file);
             } else {
                 document.getElementById("byteResult").innerText = "이미지를 선택해 주세요.";
             }
